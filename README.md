@@ -205,6 +205,57 @@ Las contribuciones son bienvenidas. Por favor, sigue estos pasos:
 
 Este proyecto está licenciado bajo la Licencia MIT - ver el archivo LICENSE para más detalles.
 
+## Implementación con Docker
+
+Este proyecto está containerizado usando Docker para facilitar su despliegue y ejecución. Sigue estos pasos para ejecutar la aplicación usando Docker:
+
+### Prerrequisitos
+
+- [Docker](https://www.docker.com/get-started) instalado en tu sistema
+- [Docker Compose](https://docs.docker.com/compose/install/) (opcional, para usar docker-compose.yml)
+
+### Instalación y ejecución
+
+#### Opción 1: Usando scripts de automatización
+
+**Para Windows (PowerShell):**
+```powershell
+.\build_and_run.ps1
+```
+
+**Para Linux/Mac (Bash):**
+```bash
+chmod +x build_and_run.sh
+./build_and_run.sh
+```
+
+#### Opción 2: Usando Docker Compose
+
+```bash
+docker-compose up -d
+```
+
+#### Opción 3: Comandos Docker manuales
+
+```bash
+# Construir la imagen
+docker build -t supermarket-sales-prediction .
+
+# Ejecutar el contenedor
+docker run -d --name supermarket-sales -p 8501:8501 -v ./models:/app/models -v ./data:/app/data supermarket-sales-prediction
+```
+
+### Acceder a la aplicación
+
+Una vez que el contenedor esté en funcionamiento, accede a la aplicación web en tu navegador:
+- URL: `http://localhost:8501`
+
+### Solución de problemas comunes
+
+- **Error de carga de modelos**: Verifica que los archivos de modelos (.h5 y .joblib) existan en las carpetas correspondientes.
+- **Error de permisos de volumen**: Asegúrate de que Docker tenga permisos para acceder a las carpetas de modelos y datos.
+- **Problemas de memoria**: Si Docker se queda sin memoria, intenta aumentar la memoria asignada en la configuración de Docker.
+
 ## Contacto
 
 Para preguntas o comentarios, por favor contacta a [tu-email@ejemplo.com].

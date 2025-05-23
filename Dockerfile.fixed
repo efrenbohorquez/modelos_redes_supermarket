@@ -1,0 +1,38 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    software-properties-common \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar archivos de requerimientos e instalar dependencias
+COPY requirements_updated.txt .
+RUN pip install --no-cache-dir -r requirements_updated.txt
+
+# Copiar todos los archivos del proyecto
+COPY . .
+
+# Exponer el puerto para Streamlit
+EXPOSE 8501
+
+# Crear directorios necesarios si no existen
+RUN mkdir -p data/processed models/mlp/results models/lstm/results models/cnn/results \
+    models/baseline/models models/baseline/results models/hybrid/results models/ensemble/results
+
+# Parche para la corrección del formato de hora
+RUN sed -i 's/data\[\x27Hour\x27\] = pd\.to_datetime(data\[\x27Time\x27\], format=\x27%H:%M\x27)\.dt\.hour/try:\n                data[\x27Hour\x27] = pd.to_datetime(data[\x27Time\x27], format=\x27%H:%M\x27).dt.hour\n            except ValueError:\n                data[\x27Hour\x27] = pd.to_datetime(data[\x27Time\x27], format=\x27mixed\x27).dt.hour\n            except Exception as e:\n                # Si todo falla, extraemos la hora manualmente\n                data[\x27Hour\x27] = data[\x27Time\x27].astype(str).str.extract(r\x27(\\d+)\x27).astype(float)/g' app.py
+
+# Verificar que los modelos están cargados correctamente
+RUN python -u test_model_loading.py || { echo "Error: Los modelos no se pudieron cargar correctamente"; exit 1; }
+
+# Establecer variables de entorno para TensorFlow
+ENV PYTHONUNBUFFERED=1
+ENV TF_CPP_MIN_LOG_LEVEL=2
+
+# Comando para ejecutar la aplicación
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]

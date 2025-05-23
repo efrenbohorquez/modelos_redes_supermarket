@@ -14,10 +14,22 @@ from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSe
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.ensemble import RandomForestRegressor
 import xgboost as xgb
-from tensorflow.keras.models import Sequential, Model
+import tensorflow as tf
+from tensorflow.keras.models import Sequential, Model, load_model
 from tensorflow.keras.layers import Dense, Dropout, BatchNormalization, LSTM, Input, Concatenate, Conv2D, MaxPooling2D, Flatten
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras import metrics
+from tensorflow.keras.saving import register_keras_serializable
+
+# Registrar métricas personalizadas para asegurar compatibilidad al cargar modelos
+@register_keras_serializable(package="metrics")
+def mse(y_true, y_pred):
+    return tf.keras.metrics.mean_squared_error(y_true, y_pred)
+
+@register_keras_serializable(package="metrics")
+def mae(y_true, y_pred):
+    return tf.keras.metrics.mean_absolute_error(y_true, y_pred)
 
 # Importar funciones de utilidad
 from data_utils import (

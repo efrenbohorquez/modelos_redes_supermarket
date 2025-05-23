@@ -1,0 +1,42 @@
+# Archivos y directorios específicos de Git
+.git
+.gitignore
+
+# Directorios de entornos virtuales de Python
+venv/
+env/
+.env/
+.venv/
+
+# Archivos de caché
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos de Jupyter
+.ipynb_checkpoints/
+
+# Directorios de datos grandes y logs (si no son necesarios en la imagen)
+logs/
+
+# Archivos temporales
+tmp/
+temp/
+
+# Archivos de distribución
+dist/
+build/
+*.egg-info/

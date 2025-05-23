@@ -1,0 +1,41 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    software-properties-common \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar archivos de requerimientos e instalar dependencias
+COPY requirements_updated.txt .
+RUN pip install --no-cache-dir -r requirements_updated.txt
+
+# Copiar todos los archivos del proyecto
+COPY . .
+
+# Exponer el puerto para Streamlit
+EXPOSE 8501
+
+# Crear directorios necesarios si no existen
+RUN mkdir -p data/processed models/mlp/results models/lstm/results models/cnn/results \
+    models/baseline/models models/baseline/results models/hybrid/results models/ensemble/results
+
+# Agregar funciones de manejo seguro de formato de hora al inicio del archivo app.py
+RUN sed -i '1i import re\n\n# Función para formatear la hora de manera segura\ndef safe_format_hour(time_str):\n    """Convierte la cadena de tiempo al formato de hora de manera segura."""\n    if isinstance(time_str, str):\n        # Intenta extraer solo el número de la hora\n        match = re.search(r"(\\d+)", time_str)\n        if match:\n            return int(match.group(1))\n    return 0  # valor por defecto si no se puede extraer\n\n# Procesar hora de manera segura\ndef process_time_safely(df):\n    """Procesa la columna Time de manera segura para extraer la hora."""\n    if "Time" in df.columns:\n        df["Hour"] = df["Time"].apply(safe_format_hour)\n    return df\n' app.py
+
+# Reemplazar las conversiones problemáticas de hora en app.py
+RUN sed -i 's/data\["Hour"\] = pd\.to_datetime(data\["Time"\], format="%H:%M")\.dt\.hour/data = process_time_safely(data)/g' app.py
+
+# Verificar que los modelos están cargados correctamente
+RUN python -u test_model_loading.py || { echo "Error: Los modelos no se pudieron cargar correctamente"; exit 1; }
+
+# Establecer variables de entorno para TensorFlow
+ENV PYTHONUNBUFFERED=1
+ENV TF_CPP_MIN_LOG_LEVEL=2
+
+# Comando para ejecutar la aplicación
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]

@@ -1,0 +1,44 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    software-properties-common \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar archivos de requerimientos e instalar dependencias
+COPY requirements_updated.txt .
+RUN pip install --no-cache-dir -r requirements_updated.txt
+
+# Copiar todos los archivos del proyecto
+COPY . .
+
+# Exponer el puerto para Streamlit
+EXPOSE 8501
+
+# Crear directorios necesarios si no existen
+RUN mkdir -p data/processed models/mlp/results models/lstm/results models/cnn/results \
+    models/baseline/models models/baseline/results models/hybrid/results models/ensemble/results
+
+# Aplicar parche para corregir el problema de formato de hora en app.py
+RUN sed -i 's/data\[\x27Hour\x27\] = pd\.to_datetime(data\[\x27Time\x27], format=\x27%H:%M\x27)\.dt\.hour/try:\n        data[\x27Hour\x27] = pd.to_datetime(data[\x27Time\x27], format=\x27mixed\x27).dt.hour\n    except Exception as e:\n        print(f"Error al procesar horas: {e}")\n        data[\x27Hour\x27] = data[\x27Time\x27].astype(str).str.extract(r\x27(\\d+)\x27).astype(float)/g' app.py
+
+# Crear un script simple para verificar el formato de hora
+RUN echo "import pandas as pd; print('Probando formato de hora...'); time_data = [':00', '10:30', '14:45']; for t in time_data: print(f'Formato {t} -> ', pd.to_datetime(t, format='mixed').hour if pd.notna(pd.to_datetime(t, format='mixed', errors='coerce')) else 'Error')" > test_time_format.py
+
+# Verificar que los modelos están cargados correctamente
+RUN python -u test_model_loading.py || { echo "Error: Los modelos no se pudieron cargar correctamente"; exit 1; }
+
+# Probar la corrección del formato de hora
+RUN python -u test_time_format.py
+
+# Establecer variables de entorno para TensorFlow
+ENV PYTHONUNBUFFERED=1
+ENV TF_CPP_MIN_LOG_LEVEL=2
+
+# Comando para ejecutar la aplicación
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]

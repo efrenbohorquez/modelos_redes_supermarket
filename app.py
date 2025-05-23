@@ -17,6 +17,19 @@ import json
 import time
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
+# Crear objetos personalizados para las métricas
+def mse(y_true, y_pred):
+    return tf.keras.metrics.mean_squared_error(y_true, y_pred)
+
+def mae(y_true, y_pred):
+    return tf.keras.metrics.mean_absolute_error(y_true, y_pred)
+
+# Registrar las métricas personalizadas con TensorFlow
+tf.keras.utils.get_custom_objects().update({
+    'mse': mse,
+    'mae': mae
+})
+
 # No necesitamos agregar directorio raíz al path ya que los archivos están en el mismo directorio
 # sys.path.append('..')
 from data_utils import load_data, preprocess_data, prepare_time_series_data
@@ -142,21 +155,24 @@ def load_preprocessors():
             mlp_datasets = joblib.load(mlp_path)
             lstm_datasets = joblib.load(lstm_path)
             cnn_datasets = joblib.load(cnn_path)
-            
             preprocessors['MLP'] = mlp_datasets['ventas_totales']['preprocessor']
             preprocessors['LSTM'] = lstm_datasets['ventas_totales_seq7']['preprocessor']
             preprocessors['CNN'] = cnn_datasets['ventas_totales']['preprocessor']
+            preprocessors['Baseline'] = mlp_datasets['ventas_totales']['preprocessor']  # Usar el mismo que MLP para Baseline
+            preprocessors['Híbrido'] = {'scaler': preprocessors['MLP']['scaler']}  # Configuración básica
+            preprocessors['Ensemble'] = {'scaler': preprocessors['MLP']['scaler'], 'feature_names': preprocessors['MLP']['feature_names']}  # Usar el mismo que MLP
             
             st.sidebar.success("Preprocesadores cargados correctamente")
-        else:
-            # Creamos preprocesadores de ejemplo para modo demostración
+        else:            # Creamos preprocesadores de ejemplo para modo demostración
             from sklearn.preprocessing import StandardScaler
             scaler = StandardScaler()
-            
             # Preprocesadores de ejemplo
             preprocessors['MLP'] = {'scaler': scaler, 'feature_names': ['Quantity', 'Unit price', 'Total']}
             preprocessors['LSTM'] = {'scaler': scaler, 'sequence_length': 7}
             preprocessors['CNN'] = {'scaler': scaler}
+            preprocessors['Baseline'] = {'scaler': scaler, 'feature_names': ['Quantity', 'Unit price', 'Total']}
+            preprocessors['Híbrido'] = {'scaler': scaler}
+            preprocessors['Ensemble'] = {'scaler': scaler, 'feature_names': ['Quantity', 'Unit price', 'Total']}
             
             st.sidebar.warning("Preprocesadores de demostración configurados")
     except Exception as e:
@@ -276,12 +292,14 @@ def generate_predictions(model_name, model, data, target_variable, preprocessors
             pass
         elif model_name == 'Baseline':
             # Preprocesar datos para modelos baseline
+            # Usamos el preprocesador de MLP ya que el baseline usa los mismos datos
             X = preprocessors['MLP']['scaler'].transform(data[preprocessors['MLP']['feature_names']])
             predictions = model.predict(X)
         elif model_name == 'Híbrido':
             # Preprocesar datos para modelo híbrido
-            # Implementar lógica específica para modelo híbrido
-            pass
+            # Necesitamos datos preprocesados para las tres entradas del modelo híbrido: MLP, LSTM y CNN
+            st.warning("La predicción con el modelo Híbrido requiere implementación específica adicional")
+            predictions = None
         elif model_name == 'Ensemble':
             # Preprocesar datos para modelo ensemble
             X = preprocessors['MLP']['scaler'].transform(data[preprocessors['MLP']['feature_names']])
@@ -1059,8 +1077,7 @@ def show_model_comparison(model_results):
 # Función para mostrar visualizaciones avanzadas
 def show_advanced_visualizations(data):
     st.markdown('<h2 class="sub-header">Visualizaciones Avanzadas</h2>', unsafe_allow_html=True)
-    
-    # Selección de tipo de visualización
+      # Selección de tipo de visualización
     viz_type = st.selectbox(
         "Seleccione tipo de visualización",
         ["Análisis de Tendencias", "Patrones por Hora del Día", "Segmentación de Clientes", "Análisis de Canasta de Compra", "Mapas de Calor", "Análisis de Rentabilidad"]
@@ -1095,14 +1112,22 @@ def show_advanced_visualizations(data):
         })
         
         fig = px.line(sales_by_month, x='MonthName', y='Total', 
-                     title='Ventas Totales por Mes',
-                     labels={'MonthName': 'Mes', 'Total': 'Ventas Totales'},
-                     markers=True)
+                    title='Ventas Totales por Mes',
+                    labels={'MonthName': 'Mes', 'Total': 'Ventas Totales'},
+                    markers=True)
         st.plotly_chart(fig, use_container_width=True)
-    
+        
     elif viz_type == "Patrones por Hora del Día":
         # Ventas por hora del día
-        data['Hour'] = pd.to_datetime(data['Time'], format='%H:%M').dt.hour
+        try:
+            # Intentar directamente con formato mixto más flexible
+            data['Hour'] = pd.to_datetime(data['Time'], format='mixed').dt.hour
+        except Exception as e:
+            # Si todo falla, extraemos la hora manualmente
+            st.warning(f"Se encontraron problemas al procesar los formatos de hora: {e}")
+            # Extraer la hora de las cadenas de texto usando expresiones regulares
+            data['Hour'] = data['Time'].astype(str).str.extract(r'(\d+)').astype(float)
+            
         sales_by_hour = data.groupby('Hour')['Total'].mean().reset_index()
         
         fig = px.line(sales_by_hour, x='Hour', y='Total', 
@@ -1162,8 +1187,7 @@ def show_advanced_visualizations(data):
                     color='Unit price')
         st.plotly_chart(fig, use_container_width=True)
     
-    elif viz_type == "Mapas de Calor":
-        # Mapa de calor de correlación
+    elif viz_type == "Mapas de Calor":        # Mapa de calor de correlación
         numeric_data = data.select_dtypes(include=['float64', 'int64'])
         corr = numeric_data.corr()
         
@@ -1175,7 +1199,17 @@ def show_advanced_visualizations(data):
         
         # Mapa de calor de ventas por día y hora
         if 'Hour' not in data.columns:
-            data['Hour'] = pd.to_datetime(data['Time'], format='%H:%M').dt.hour
+            try:
+                # Primero intentamos con el formato específico
+                data['Hour'] = pd.to_datetime(data['Time'], format='%H:%M').dt.hour
+            except ValueError:
+                # Si falla, intentamos con formato mixto
+                data['Hour'] = pd.to_datetime(data['Time'], format='mixed').dt.hour
+            except Exception as e:
+                # Si todo falla, extraemos la hora manualmente
+                st.warning(f"Se encontraron problemas al procesar los formatos de hora: {e}")
+                # Extraer la hora de las cadenas de texto usando expresiones regulares
+                data['Hour'] = data['Time'].astype(str).str.extract(r'(\d+)').astype(float)
         if 'DayOfWeek' not in data.columns:
             data['Date'] = pd.to_datetime(data['Date'])
             data['DayOfWeek'] = data['Date'].dt.dayofweek
