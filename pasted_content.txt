@@ -1,0 +1,71 @@
+Para un proyecto de redes neuronales aplicado al dataset "Supermarket Sales" de Kaggle, ajustado a la realidad de un pequeño supermercado, se puede seguir esta estructura con 4 modelos diferentes:
+
+## Dataset
+El dataset contiene datos de ventas históricas de un supermercado con atributos como ID de factura, sucursal, tipo de cliente, género, línea de producto, precio unitario, cantidad, impuestos, total, fecha, hora, método de pago, costo, margen bruto y calificación del cliente[1][2].
+
+## Objetivo
+Predecir las ventas o demanda para optimizar inventarios y estrategias de venta, ajustando los modelos a la escala y características de un pequeño supermercado[3][5].
+
+## Modelos sugeridos
+
+- **Red Neuronal Multicapa (MLP)**: Modelo básico para predicción de ventas, con capas ocultas ajustadas a la complejidad del problema. Se puede usar para regresión de ventas diarias o por producto[4].
+
+- **Red Neuronal LSTM**: Ideal para series temporales, captura patrones en datos secuenciales como ventas diarias o semanales, considerando estacionalidad y días de la semana[3][5].
+
+- **Red Neuronal Convolucional (CNN)**: Aunque más común en imágenes, se ha usado para predicción de ventas con alta precisión (91%) al extraer características complejas de datos tabulares o temporales[6].
+
+- **Modelos de Regresión Lineal o Árboles de Decisión**: Como baseline para comparar desempeño con redes neuronales, útiles para entender variables clave y patrones simples[6].
+
+## Pasos para el proyecto
+
+1. **Análisis exploratorio**: Explorar y limpiar datos, entender variables relevantes y su distribución[2][3].
+
+2. **Preprocesamiento**: Normalizar o estandarizar datos, crear variables temporales (día, mes, temporada), codificar variables categóricas.
+
+3. **Entrenamiento y validación**: Dividir datos en entrenamiento y prueba, entrenar cada modelo, ajustar hiperparámetros y evaluar con métricas como MAE, RMSE[3][5].
+
+4. **Comparación y ajuste**: Comparar resultados, seleccionar modelo que mejor se ajuste a la realidad del pequeño supermercado en precisión y simplicidad.
+
+5. **Implementación**: Desplegar modelo para predicción continua y toma de decisiones en inventario y ventas.
+
+Este enfoque permite aprovechar el dataset de Kaggle para crear modelos predictivos de ventas ajustados a un pequeño supermercado, mejorando la gestión y rentabilidad[1][2][3][4][5][6].
+
+Citations:
+[1] https://www.kaggle.com/datasets/faresashraf1001/supermarket-sales
+[2] https://www.linkedin.com/pulse/supermarket-sales-data-analytics-project-loice-mumo-uioof
+[3] https://repository.unad.edu.co/bitstream/handle/10596/67122/sfbenavidesp.pdf?sequence=3
+[4] https://repositorio.uss.edu.pe/bitstream/handle/20.500.12802/8449/Benites%20Sernaqu%C3%A9%20Jos%C3%A9%20Manuel.pdf?sequence=1&isAllowed=y
+[5] https://repository.unad.edu.co/bitstream/handle/10596/67122/sfbenavidesp.pdf?sequence=3&isAllowed=y
+[6] https://es.linkedin.com/pulse/predicci%C3%B3n-de-ventas-en-tiendas-retail-utilizando-quiroga-salda%C3%B1a
+[7] https://community.fabric.microsoft.com/t5/Data-Stories-Gallery/Supermarket-sales-analysis/m-p/3289357
+[8] https://www.kaggle.com/code/pablolorentedomnguez/supermarket-ratings
+[9] https://blog.softtek.com/es/transformando-el-comercio-minorista-casos-clave-de-ia
+[10] https://mobirise.com/html-templates/es/grocery/
+[11] https://repository.libertadores.edu.co/bitstreams/110a43cc-4a9a-426b-aaed-bd2378051626/download
+[12] https://ru.dgb.unam.mx/bitstream/20.500.14330/TES01000742864/3/0742864.pdf
+[13] https://repositorio.uchile.cl/bitstream/handle/2250/173464/Estimaci%C3%B3n-de-la-demanda-de-productos-perecibles-en-un-supermercado.pdf?sequence=1
+[14] https://www.kaggle.com/code/franciscorubiof/an-lisis-de-datos-supermercado
+[15] https://www.kaggle.com/datasets/andrexibiza/grocery-sales-dataset
+[16] https://www.kaggle.com/datasets/rohitsahoo/sales-forecasting
+[17] https://github.com/Billu98/Data-analysis-project-on-supermarket-sales
+[18] https://repositorio.comillas.edu/jspui/bitstream/11531/78814/2/TFG%20-%20Echevarria%20Casasola,%20Marta.pdf
+[19] https://blog.desafiolatam.com/10-dataset-para-construir-tu-portafolio/
+[20] https://bibliotecadigital.udea.edu.co/bitstreams/814d170a-be66-4d96-ba03-93de9fffc964/download
+[21] https://www.aprendemachinelearning.com/pronostico-de-ventas-redes-neuronales-python-embeddings/
+[22] https://repository.unimilitar.edu.co/bitstream/handle/10654/18098/Gonzalez%20Clavijo%20Carlos%20Andres%202018.pdf?sequence=2
+[23] https://repository.unad.edu.co/jspui/bitstream/10596/64309/3/Valassov.pdf
+[24] https://www.isdi.education/es/blog/las-redes-neuronales-artificiales-en-la-inteligencia-de-negocios
+[25] https://repository.libertadores.edu.co/bitstreams/cf24ada3-11ef-48a2-8be2-ec999c1725aa/download
+[26] https://fastercapital.com/es/contenido/Red-neuronal-de-prevision-de-ventas--como-entrenar-una-red-neuronal-para-generar-previsiones-de-ventas-precisas.html
+[27] https://inventarios1a.com/page/post/153/redes-neuronales-para-predecir-el-stock-de-inventario
+[28] https://tru-vue.com/es/2021/03/how-small-format-grocery-stores-are-pivoting-operations-amid-a-pandemic/
+[29] https://repository.eia.edu.co/bitstreams/32f793c6-21dd-4a98-9f17-c5a67247d44e/download
+[30] https://bibliotecadigital.udea.edu.co/bitstream/10495/25073/12/JuanPabloGutierrezMuriel_2021_PrediccionVentasUnidades.pdf
+[31] https://cienciadedatos.net/documentos/py35-redes-neuronales-python
+[32] https://opensistemas.com/paso-a-paso-entrenamiento-de-la-red-neuronal/
+[33] https://www.youtube.com/watch?v=EgklwkyieOY
+[34] https://cienciadedatos.net/documentos/68-redes-neuronales-r
+[35] https://repositorio.comillas.edu/rest/bitstreams/441565/retrieve
+
+---
+Answer from Perplexity: pplx.ai/share

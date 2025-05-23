@@ -1,0 +1,43 @@
+# Archivos generados por Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Distribuciones
+*.egg-info/
+*.egg
+dist/
+build/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+
+# Archivos de log
+*.log
+logs/
+
+# Archivos generados por modelos
+# Mantendremos los modelos entrenados para poder usarlos directamente
+# data/processed/
+# *.h5
+# *.joblib
+# *.pkl
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
